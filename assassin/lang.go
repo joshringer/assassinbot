@@ -9,6 +9,7 @@ type Lang struct {
 	PA, PD, PT, PCS, PAS string
 }
 
+// Fmt should be used to format a template string when substitutions are required.
 func (l Lang) Fmt(t string, a ...interface{}) string {
 	return fmt.Sprintf(t, a...)
 }

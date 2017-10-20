@@ -126,12 +126,14 @@ func (e *GameEngine) notifyStatus(p Player) {
 	e.msg.Notify(p, s)
 }
 
+// GameInProgressError is returned when a game is already running.
 type GameInProgressError struct {
 	tpl Lang
 }
 
 func (e GameInProgressError) Error() string { return e.tpl.EIP }
 
+// Run a Game on the engine. Only one game can be run per engine at once.
 func (e *GameEngine) Run(g *Game) error {
 	if e.running {
 		return &GameInProgressError{e.tpl}
@@ -225,6 +227,8 @@ func (e *GameEngine) Run(g *Game) error {
 	return nil
 }
 
+// IncomingTalk is used to send incoming chatter from players to the running game.
+// This talk is responsible for triggering actions during the game.
 func (e *GameEngine) IncomingTalk(from ID, text string) {
 	e.talk <- struct {
 		ID

@@ -47,6 +47,7 @@ func (p Player) GetContract() (c Player, ok bool) {
 	return
 }
 
+// PlayerDeadError is returned when a player must be alive to execute the method.
 type PlayerDeadError struct {
 	string
 }
