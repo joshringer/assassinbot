@@ -167,22 +167,35 @@ func (h *testMessageHandler) Notify(p Player, s string) {
 	}
 }
 
-func triggeredTimeFunc(t *testing.T, wait chan time.Duration) func(...int) time.Duration {
-	return func(args ...int) time.Duration {
-		var to = timeout(time.Second)
-		select {
-		case d := <-wait:
-			return d
-		case <-to:
-			t.Error("Timeout waiting for trigger")
-			return 0
-		}
+type triggeredTimingFunc struct {
+	t    *testing.T
+	wait chan time.Duration
+}
+
+func newTriggeredTimingFunc(t *testing.T) *triggeredTimingFunc {
+	return &triggeredTimingFunc{t, make(chan time.Duration)}
+}
+
+func (ttf *triggeredTimingFunc) set(t *testing.T) {
+	ttf.t = t
+}
+
+func (ttf *triggeredTimingFunc) Calc() time.Duration {
+	var to = timeout(time.Second)
+	select {
+	case d := <-ttf.wait:
+		return d
+	case <-to:
+		ttf.t.Error("Timeout waiting for trigger")
+		return 0
 	}
+
 }
 
 func TestGameEngineBasic(t *testing.T) {
 	var mh = newTestMessageHandler(t)
-	var e = NewGameEngine(LangEn, mh, triggeredTimeFunc(t, nil))
+	var tf = newTriggeredTimingFunc(t)
+	var e = NewGameEngine(LangEn, mh, tf)
 	var g = NewGame(1, map[ID]string{1: "A"}, &dummyWordGen{97})
 	var res = make(chan error)
 	go func() { res <- e.Run(g) }()
@@ -209,9 +222,9 @@ func input(t *testing.T, e *GameEngine, p *Player, s string) {
 }
 
 func TestGameEngineRunthrough(t *testing.T) {
-	var wait = make(chan time.Duration)
 	var mh = newTestMessageHandler(t)
-	var e = NewGameEngine(LangEn, mh, triggeredTimeFunc(t, wait))
+	var tf = newTriggeredTimingFunc(t)
+	var e = NewGameEngine(LangEn, mh, tf)
 	var g = NewGame(1, map[ID]string{1: "Ace", 2: "Bee", 3: "Cee", 4: "Dee"}, &dummyWordGen{97})
 	var s *Player
 	var rpt = regexp.MustCompile(LangEn.Fmt(LangEn.PT, ".+", ".+"))
@@ -230,6 +243,7 @@ func TestGameEngineRunthrough(t *testing.T) {
 	mh.expect(sm...)
 	t.Run("attack", func(t *testing.T) {
 		mh.set(t)
+		tf.set(t)
 		var t1 = s.target
 		if t1 == nil {
 			t.Fatal("Player", s, "missing target")
@@ -237,7 +251,7 @@ func TestGameEngineRunthrough(t *testing.T) {
 		input(t, e, s, "Text including "+s.KillWord)
 		var to = timeout(time.Second)
 		select {
-		case wait <- time.Nanosecond:
+		case tf.wait <- time.Nanosecond:
 		case d := <-to:
 			t.Error("Wait not requested within", d)
 		}
@@ -247,6 +261,7 @@ func TestGameEngineRunthrough(t *testing.T) {
 	})
 	t.Run("counter", func(t *testing.T) {
 		mh.set(t)
+		tf.set(t)
 		var t1 = s.target
 		if t1 == nil {
 			t.Fatal("Player", s, "missing target")
@@ -259,7 +274,7 @@ func TestGameEngineRunthrough(t *testing.T) {
 		input(t, e, t2, "Response including "+t2.KillWord)
 		var to = timeout(time.Second)
 		select {
-		case wait <- time.Nanosecond:
+		case tf.wait <- time.Nanosecond:
 		case d := <-to:
 			t.Error("Wait not requested within", d)
 		}

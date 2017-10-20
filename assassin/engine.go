@@ -50,19 +50,6 @@ func (a *actionQueue) pop() (p, t ID, r bool) {
 	return i.p, i.t, i.r
 }
 
-// GameEngine contains state information for running a game.
-type GameEngine struct {
-	tpl     Lang
-	msg     MessageHandler
-	atf     func(...int) time.Duration
-	running bool
-	talk    chan struct {
-		ID
-		string
-	}
-	action chan GameActionConst
-}
-
 /*
 MessageHandler interface for the GameEngine to report events to.
 	Announce sends a public message to all players in the game.
@@ -73,8 +60,28 @@ type MessageHandler interface {
 	Notify(p Player, s string)
 }
 
+/*
+AttackTimingFunc interface controls delay between a player attack and its execution (and therefore how long the target has to counter the attack).
+*/
+type AttackTimingFunc interface {
+	Calc() time.Duration
+}
+
+// GameEngine contains state information for running a game.
+type GameEngine struct {
+	tpl     Lang
+	msg     MessageHandler
+	atf     AttackTimingFunc
+	running bool
+	talk    chan struct {
+		ID
+		string
+	}
+	action chan GameActionConst
+}
+
 // NewGameEngine returns a new GameEngine instance.
-func NewGameEngine(tpl Lang, msg MessageHandler, atf func(...int) time.Duration) *GameEngine {
+func NewGameEngine(tpl Lang, msg MessageHandler, atf AttackTimingFunc) *GameEngine {
 	var e = new(GameEngine)
 	e.tpl = tpl
 	e.msg = msg
@@ -154,7 +161,7 @@ func (e *GameEngine) Run(g *Game) error {
 						if t, ok := p.GetTarget(); ok {
 							attacks.push(p.ID, t.ID)
 							go func() {
-								time.Sleep(e.atf())
+								time.Sleep(e.atf.Calc())
 								e.action <- AttackAction
 							}()
 						}
