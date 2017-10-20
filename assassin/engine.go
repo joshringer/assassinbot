@@ -1,3 +1,20 @@
+/*
+Package assassin contains an engine for running a word-based version of the
+popular assassin game (see https://en.wikipedia.org/wiki/Assassin_%28game%29).
+
+Rules are as follows:
+ - Each player is given a KillWord and set a target of one of the other players.
+ - Players can eliminate opponents in one of 3 ways:
+   1. A player can convince their target to say their KillWord, in which case their target is immediately assassinated.
+	 2. A player can attack their target by saying their own KillWord. After some period of time, the attack will be carried out and the target will be killed, unless:
+	 3. A player can counter an attack on them by saying their own KillWord within the window of attack. In this case, after the window expires, the attacker is killed instead.
+
+Game Setup:
+	Create a new GameEngine to run the game.
+	Create a new Game instance by calling NewGame, passing in player details.
+	Call GameEngine.Run(Game) in a sub-routine to run the game.
+	Player messages controlling game flow can be input through GameEngine.IncomingTalk.
+*/
 package assassin
 
 import (
