@@ -32,15 +32,15 @@ const (
 	AttackAction
 )
 
-type actionQueue struct {
+type attackQueue struct {
 	q []struct {
 		p, t ID
 		r    bool
 	}
 }
 
-func newActionQueue() *actionQueue {
-	var a = new(actionQueue)
+func newAttackQueue() *attackQueue {
+	var a = new(attackQueue)
 	a.q = make([]struct {
 		p, t ID
 		r    bool
@@ -48,20 +48,21 @@ func newActionQueue() *actionQueue {
 	return a
 }
 
-func (a *actionQueue) each(f func(p, t ID, r bool) bool) {
+func (a *attackQueue) each(f func(p, t ID, r bool) bool) {
 	for i, v := range a.q {
 		a.q[i].r = f(v.p, v.t, v.r)
 	}
 }
 
-func (a *actionQueue) push(p, t ID) {
+func (a *attackQueue) push(p, t ID) {
 	a.q = append(a.q, struct {
 		p, t ID
 		r    bool
 	}{p, t, false})
 }
 
-func (a *actionQueue) pop() (p, t ID, r bool) {
+func (a *attackQueue) pop() (p, t ID, r bool) {
+	// Nb. Will panic if nothing to pop.
 	var i = a.q[0]
 	a.q = a.q[1:]
 	return i.p, i.t, i.r
@@ -146,7 +147,7 @@ func (e *GameEngine) Run(g *Game) error {
 	})
 	// the main event loop
 	var pc = g.Status()
-	var attacks = newActionQueue()
+	var attacks = newAttackQueue()
 	var elimination = func(p Player) {
 		e.msg.Announce(e.tpl.Fmt(e.tpl.GD, p.Name))
 		if c, ok := p.GetContract(); ok {
@@ -159,6 +160,10 @@ func (e *GameEngine) Run(g *Game) error {
 		case chat := <-e.talk:
 			var p, ok = g.GetPlayer(chat.ID)
 			if ok && p.Alive {
+				/*
+					When analysing the chatter, check for an assassination first.
+					If a message includes both player's KillWord and their contract's, the assassination will take precedence over the attack/counter.
+				*/
 				if c, ok := p.GetContract(); ok && strings.Contains(chat.string, c.KillWord) {
 					// p assassinated
 					if k, ok := g.ResolvePlayerKill(p.ID); ok {

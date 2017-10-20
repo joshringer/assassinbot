@@ -159,6 +159,10 @@ func (g *Game) ResolvePlayerCounter(pid, cid ID) (Player, bool) {
 
 // Start starts the game, assigning player targets.
 func (g *Game) Start() {
+	/*
+		Players are assigned targets in such a way as to form a circular chain.
+		Here, we use a random permutation to determine the indices (il) in the player list (pl) to link up. We then loop through once and SetTarget accordingly.
+	*/
 	var (
 		l  = len(g.players)
 		il = rand.Perm(l)

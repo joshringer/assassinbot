@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func TestActionQueue(t *testing.T) {
-	var q = newActionQueue()
+func TestAttackQueue(t *testing.T) {
+	var q = newAttackQueue()
 	t.Run("push", func(t *testing.T) {
 		q.push(1, 2)
 		q.push(3, 4)
