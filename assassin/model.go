@@ -2,7 +2,6 @@ package assassin
 
 import (
 	"math/rand"
-	"time"
 )
 
 // ID == identifier, used to uniquely identify Players/Games.
@@ -157,7 +156,10 @@ func (g *Game) ResolvePlayerCounter(pid, cid ID) (Player, bool) {
 	return Player{}, false
 }
 
-// Start starts the game, assigning player targets.
+/*
+Start starts the game, assigning player targets.
+Nb. This function makes use of rand. Do not forget to Seed!
+*/
 func (g *Game) Start() {
 	/*
 		Players are assigned targets in such a way as to form a circular chain.
@@ -185,8 +187,4 @@ func (g Game) Status() int {
 		}
 	}
 	return c
-}
-
-func init() {
-	rand.Seed(time.Now().Unix())
 }
