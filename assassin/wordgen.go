@@ -8,35 +8,35 @@ import (
 
 /*
 WordGenerator interface for generating player KillWords.
-	Gen() generates and returns a single word
+	Next() generates and returns a single word
 */
 type WordGenerator interface {
-	Gen() string
+	Next() string
 }
 
 /*
-ListPickWordGenerator is a WordGenerator that selects words from a pre-provided
+WordList is a WordGenerator that selects words from a pre-provided
 list of words.
 */
-type ListPickWordGenerator struct {
-	wordList []string
-	current  int
+type WordList struct {
+	words   []string
+	current int
 }
 
-// NewListPickWordGenerator creates a ListPickWordGenerator from a given wordList.
-func NewListPickWordGenerator(words []string) *ListPickWordGenerator {
-	var g = &ListPickWordGenerator{make([]string, 0), 0}
+// NewWordList creates a WordList from a given words.
+func NewWordList(words []string) *WordList {
+	var g = &WordList{make([]string, 0), 0}
 	for _, i := range rand.Perm(len(words)) {
-		g.wordList = append(g.wordList, words[i])
+		g.words = append(g.words, words[i])
 	}
 	return g
 }
 
 /*
-ListPickWordGeneratorFromReader creates a ListPickWordGenerator, reading the
+WordListFromReader creates a WordList, reading the
 contents of the provided r to construct the word list.
 */
-func ListPickWordGeneratorFromReader(r io.Reader) (*ListPickWordGenerator, error) {
+func WordListFromReader(r io.Reader) (*WordList, error) {
 	var (
 		s = bufio.NewScanner(r)
 		w = make([]string, 0)
@@ -45,12 +45,12 @@ func ListPickWordGeneratorFromReader(r io.Reader) (*ListPickWordGenerator, error
 	for s.Scan() {
 		w = append(w, s.Text())
 	}
-	return NewListPickWordGenerator(w), s.Err()
+	return NewWordList(w), s.Err()
 }
 
-// Gen picks the next word from the list.
-func (g *ListPickWordGenerator) Gen() string {
-	var w = g.wordList[g.current]
-	g.current = (g.current + 1) % len(g.wordList)
+// Next picks the next word from the list.
+func (g *WordList) Next() string {
+	var w = g.words[g.current]
+	g.current = (g.current + 1) % len(g.words)
 	return w
 }

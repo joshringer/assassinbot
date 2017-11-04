@@ -196,7 +196,7 @@ func TestGameEngineBasic(t *testing.T) {
 	var mh = newTestMessageHandler(t)
 	var tf = newTriggeredTimingFunc(t)
 	var e = NewGameEngine(LangEn, mh, tf)
-	var g = NewGame(1, map[ID]string{1: "A"}, &dummyWordGen{97})
+	var g = NewGame(1, map[ID]string{1: "A"}, NewWordList([]string{"aaaa"}))
 	var res = make(chan error)
 	go func() { res <- e.Run(g) }()
 	go func() {
@@ -225,7 +225,11 @@ func TestGameEngineRunthrough(t *testing.T) {
 	var mh = newTestMessageHandler(t)
 	var tf = newTriggeredTimingFunc(t)
 	var e = NewGameEngine(LangEn, mh, tf)
-	var g = NewGame(1, map[ID]string{1: "Ace", 2: "Bee", 3: "Cee", 4: "Dee"}, &dummyWordGen{97})
+	var g = NewGame(
+		1,
+		map[ID]string{1: "Ace", 2: "Bee", 3: "Cee", 4: "Dee"},
+		NewWordList([]string{"kw1", "kw2", "kw3", "kw4", "kw5", "kw6", "kw7"}),
+	)
 	var s *Player
 	var rpt = regexp.MustCompile(LangEn.Fmt(LangEn.PT, ".+", ".+"))
 	var sm = make([]interface{}, 0)

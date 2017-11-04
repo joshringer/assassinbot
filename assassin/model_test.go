@@ -4,15 +4,15 @@ import "testing"
 
 func TestPlayer(t *testing.T) {
 	var (
-		dwg     = &dummyWordGen{97}
+		wg      = &WordList{words: []string{"aaaa", "bbbb", "cccc", "dddd", "eeee"}}
 		a, b, c *Player
 	)
 
 	// Test init
 	t.Run("NewPlayer", func(t *testing.T) {
-		a = NewPlayer(1, "A", dwg)
-		b = NewPlayer(2, "B", dwg)
-		c = NewPlayer(3, "C", dwg)
+		a = NewPlayer(1, "A", wg)
+		b = NewPlayer(2, "B", wg)
+		c = NewPlayer(3, "C", wg)
 
 		if a.ID != 1 || a.Name != "A" || !a.Alive {
 			t.Error(a, "not initialised as expected")
@@ -72,14 +72,14 @@ func TestPlayer(t *testing.T) {
 
 func TestGame(t *testing.T) {
 	var (
-		pl  = map[ID]string{1: "A", 2: "B", 3: "C"}
-		dwg = &dummyWordGen{97}
-		g   *Game
+		pl = map[ID]string{1: "A", 2: "B", 3: "C"}
+		wg = NewWordList([]string{"aaaa", "bbbb", "cccc"})
+		g  *Game
 	)
 
 	// Test init
 	t.Run("NewGame", func(t *testing.T) {
-		g = NewGame(1, pl, dwg)
+		g = NewGame(1, pl, wg)
 		if g.ID != 1 || len(g.players) != 3 {
 			t.Error(g, "not initialised as expected")
 		}

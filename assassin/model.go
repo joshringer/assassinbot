@@ -67,7 +67,7 @@ func (p *Player) SetTarget(t *Player) error {
 	if t == nil {
 		p.KillWord = ""
 	} else {
-		p.KillWord = p.kwg.Gen()
+		p.KillWord = p.kwg.Next()
 		t.contract = p
 	}
 	return nil
